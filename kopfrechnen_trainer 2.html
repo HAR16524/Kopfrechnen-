@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kopfrechnen Trainer</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192x192.png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #00bcd4;
+    }
+
+    select {
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      width: 100px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #008c9e;
+    }
+
+    #feedback {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kopfrechnen Trainer</h1>
+
+  <!-- Dropdown für Schwierigkeitsgrad -->
+  <label for="difficulty">Wähle den Schwierigkeitsgrad:</label>
+  <select id="difficulty" onchange="changeDifficulty()">
+    <option value="mixed">Gemischt</option>
+    <option value="easy">Einfach</option>
+    <option value="medium">Mittel</option>
+    <option value="hard">Schwer</option>
+  </select>
+
+  <div id="task-container">
+    <!-- Aufgaben erscheinen hier -->
+  </div>
+
+  <div>
+    <label for="answer">Antwort:</label>
+    <input type="text" id="answer">
+    <button onclick="checkAnswer()">Überprüfen</button>
+  </div>
+
+  <div id="feedback"></div>
+
+  <script>
+    let difficulty = "mixed"; // Standard: Gemischt
+    let currentTask = {};
+
+    // Die Aufgabe wird je nach Schwierigkeitsgrad generiert
+    function generateTask() {
+      let task;
+      let num1, num2;
+
+      // Einfache, mittlere oder schwere Aufgaben je nach Auswahl
+      switch(difficulty) {
+        case "easy":
+          num1 = Math.floor(Math.random() * 10); // Einfach: Zahlen von 0 bis 9
+          num2 = Math.floor(Math.random() * 10);
+          break;
+        case "medium":
+          num1 = Math.floor(Math.random() * 50); // Mittel: Zahlen von 0 bis 49
+          num2 = Math.floor(Math.random() * 50);
+          break;
+        case "hard":
+          num1 = Math.floor(Math.random() * 100); // Schwer: Zahlen von 0 bis 99
+          num2 = Math.floor(Math.random() * 100);
+          break;
+        case "mixed":
+          num1 = Math.floor(Math.random() * 100); // Gemischt: Zahlen von 0 bis 99
+          num2 = Math.floor(Math.random() * 100);
+          break;
+      }
+
+      // Zufällige Rechenoperation
+      const operations = ['+', '-', '*', '/'];
+      const randomOp = operations[Math.floor(Math.random() * operations.length)];
+
+      switch(randomOp) {
+        case '+':
+          task = `${num1} + ${num2}`;
+          currentTask.answer = num1 + num2;
+          break;
+        case '-':
+          task = `${num1} - ${num2}`;
+          currentTask.answer = num1 - num2;
+          break;
+        case '*':
+          task = `${num1} * ${num2}`;
+          currentTask.answer = num1 * num2;
+          break;
+        case '/':
+          task = `${num1 * num2} / ${num2}`; // Sicherstellen, dass der Divisor nicht null ist
+          currentTask.answer = num1; // Ergebnis
+          break;
+      }
+
+      document.getElementById('task-container').innerHTML = `<p>Berechne: ${task}</p>`;
+      document.getElementById('answer').value = '';
+      document.getElementById('feedback').innerHTML = '';
+    }
+
+    // Die Schwierigkeit ändern
+    function changeDifficulty() {
+      difficulty = document.getElementById('difficulty').value;
+      generateTask(); // Neue Aufgabe generieren
+    }
+
+    // Antwort überprüfen
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById('answer').value);
+      if (userAnswer === currentTask.answer) {
+        document.getElementById('feedback').innerHTML = "<p>Richtig! Gute Arbeit!</p>";
+      } else {
+        document.getElementById('feedback').innerHTML = "<p>Leider falsch. Versuche es noch einmal.</p>";
+      }
+
+      // Neue Aufgabe generieren
+      generateTask();
+    }
+
+    // Beim Laden der Seite die erste Aufgabe generieren
+    window.onload = generateTask;
+  </script>
+</body>
+</html>
