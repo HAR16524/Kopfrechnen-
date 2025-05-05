@@ -4,254 +4,114 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kopfrechnen Trainer</title>
-  <meta name="theme-color" content="#00bcd4">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Kopfrechnen">
   <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="icons/icon-192x192.png">
   <style>
-    body {
-      font-family: 'Nunito', sans-serif;
-      background: linear-gradient(135deg, #e0f7fa, #fff);
-      color: #333;
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    h1, h2 {
-      text-align: center;
-      color: #00796b;
-      margin-bottom: 20px;
-    }
-    #menu {
-      margin-bottom: 20px;
-    }
-    #menu select {
-      width: 100%;
-      font-size: 18px;
-      padding: 10px;
-      border-radius: 12px;
-      border: 2px solid #00acc1;
-      margin-bottom: 15px;
-    }
-    #hilfe {
-      font-size: 14px;
-      margin-top: 30px;
-      background: #fff8e1;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(255,193,7,0.2);
-    }
-    #aufgabe {
-      font-size: 26px;
-      margin: 20px 0;
-      background-color: #ffffffcc;
-      padding: 15px;
-      border-radius: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    input[type="number"] {
-      font-size: 20px;
-      padding: 12px;
-      width: 100%;
-      border: 2px solid #00acc1;
-      border-radius: 12px;
-      margin-bottom: 15px;
-      text-align: center;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #00bcd4;
-      color: white;
-      padding: 14px;
-      font-size: 18px;
-      border: none;
-      border-radius: 12px;
-      width: 100%;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #0097a7;
-    }
-    #feedback {
-      font-weight: bold;
-      margin-top: 10px;
-      font-size: 18px;
-      text-align: center;
-    }
-    #punkte, #statistik {
-      margin-top: 20px;
-      font-size: 18px;
-      background-color: #ffffffcc;
-      padding: 10px;
-      border-radius: 10px;
-      text-align: center;
-    }
-    .progress {
-      height: 10px;
-      border-radius: 5px;
-      background: #ccc;
-      margin-top: 10px;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #00bcd4;
-      transition: width 0.5s;
-    }
+    /* Hier kannst du dein Design anpassen */
   </style>
 </head>
 <body>
   <h1>Kopfrechnen Trainer</h1>
 
-  <div id="menu">
-    <label for="modus">Wähle den Übungsmodus:</label>
-    <select id="modus" onchange="generiereAufgabe()">
-      <option value="mix">Gemischt</option>
-      <option value="+">Addition</option>
-      <option value="-">Subtraktion</option>
-      <option value="*">Multiplikation</option>
-      <option value="/">Division</option>
-      <option value="%">Prozentrechnung</option>
-      <option value="bruch">Bruchrechnung</option>
-      <option value="dreisatz">Dreisatz</option>
-    </select>
+  <!-- Dropdown für Schwierigkeitsgrad -->
+  <label for="difficulty">Wähle den Schwierigkeitsgrad:</label>
+  <select id="difficulty" onchange="changeDifficulty()">
+    <option value="mixed">Gemischt</option>
+    <option value="easy">Einfach</option>
+    <option value="medium">Mittel</option>
+    <option value="hard">Schwer</option>
+  </select>
+
+  <div id="task-container">
+    <!-- Aufgaben erscheinen hier -->
   </div>
 
-  <div id="aufgabe">Lade Aufgabe...</div>
-  <input type="number" id="antwort" placeholder="Deine Antwort" onkeydown="if(event.key==='Enter'){kontrolliereAntwort();}">
-  <button onclick="kontrolliereAntwort()">Kontrollieren</button>
+  <div>
+    <label for="answer">Antwort:</label>
+    <input type="text" id="answer">
+    <button onclick="checkAnswer()">Überprüfen</button>
+  </div>
+
   <div id="feedback"></div>
-  <div id="punkte">Punkte: 0</div>
-  <div id="statistik">Richtig: 0 | Falsch: 0</div>
-  <div class="progress">
-    <div class="progress-bar" id="fortschritt"></div>
-  </div>
-
-  <div id="hilfe">
-    <h2>📘 Hilfe</h2>
-    <p><strong>Prozentrechnung:</strong> z.B. „25% von 80“ → 0.25 × 80 = 20</p>
-    <p><strong>Bruchrechnung:</strong> z.B. „¾ von 16“ → 3 ÷ 4 × 16 = 12</p>
-    <p><strong>Dreisatz:</strong> z.B. „Wenn 5 = 20, wie viel sind 8?“ → (8 × 20) ÷ 5 = 32</p>
-  </div>
 
   <script>
-    let punkte = parseInt(localStorage.getItem('punkte')) || 0;
-    let richtig = parseInt(localStorage.getItem('richtig')) || 0;
-    let falsch = parseInt(localStorage.getItem('falsch')) || 0;
-    let aktuelleAufgabe = {};
+    let difficulty = "mixed"; // Standard: Gemischt
+    let currentTask = {};
 
-    function zufallszahl(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+    // Die Aufgabe wird je nach Schwierigkeitsgrad generiert
+    function generateTask() {
+      let task;
+      let num1, num2;
 
-    function generiereAufgabe() {
-      const schwierigkeit = punkte < 10 ? 1 : punkte < 20 ? 2 : 3;
-      const modus = document.getElementById("modus").value;
-      const typ = modus === "mix" ? ["+", "-", "*", "/", "%", "bruch", "dreisatz"][zufallszahl(0, 6)] : modus;
-
-      let a, b, frage, loesung;
-
-      switch(typ) {
-        case "+":
-          a = zufallszahl(1, schwierigkeit * 50);
-          b = zufallszahl(1, schwierigkeit * 50);
-          loesung = a + b;
-          frage = `${a} + ${b}`;
+      // Einfache, mittlere oder schwere Aufgaben je nach Auswahl
+      switch(difficulty) {
+        case "easy":
+          num1 = Math.floor(Math.random() * 10); // Einfach: Zahlen von 0 bis 9
+          num2 = Math.floor(Math.random() * 10);
           break;
-        case "-":
-          a = zufallszahl(1, schwierigkeit * 50);
-          b = zufallszahl(1, a);
-          loesung = a - b;
-          frage = `${a} - ${b}`;
+        case "medium":
+          num1 = Math.floor(Math.random() * 50); // Mittel: Zahlen von 0 bis 49
+          num2 = Math.floor(Math.random() * 50);
           break;
-        case "*":
-          a = zufallszahl(1, schwierigkeit * 10);
-          b = zufallszahl(1, schwierigkeit * 10);
-          loesung = a * b;
-          frage = `${a} × ${b}`;
+        case "hard":
+          num1 = Math.floor(Math.random() * 100); // Schwer: Zahlen von 0 bis 99
+          num2 = Math.floor(Math.random() * 100);
           break;
-        case "/":
-          b = zufallszahl(1, schwierigkeit * 10);
-          loesung = zufallszahl(1, schwierigkeit * 10);
-          a = loesung * b;
-          frage = `${a} ÷ ${b}`;
-          break;
-        case "%":
-          a = zufallszahl(1, schwierigkeit * 100);
-          b = zufallszahl(1, 100);
-          loesung = Math.round((a * b) / 100);
-          frage = `${b}% von ${a}`;
-          break;
-        case "bruch":
-          let zaehler = zufallszahl(1, 10);
-          let nenner = zufallszahl(2, 10);
-          a = zufallszahl(1, 20);
-          loesung = +(a * zaehler / nenner).toFixed(2);
-          frage = `${zaehler}/${nenner} von ${a}`;
-          break;
-        case "dreisatz":
-          let basisA = zufallszahl(1, 50);
-          let basisB = zufallszahl(1, 100);
-          let bezug = zufallszahl(1, 50);
-          loesung = +(bezug * basisB / basisA).toFixed(2);
-          frage = `Wenn ${basisA} = ${basisB}, wie viel sind ${bezug}?`;
+        case "mixed":
+          num1 = Math.floor(Math.random() * 100); // Gemischt: Zahlen von 0 bis 99
+          num2 = Math.floor(Math.random() * 100);
           break;
       }
 
-      aktuelleAufgabe = { frage, loesung };
-      document.getElementById("aufgabe").innerText = frage;
-      document.getElementById("antwort").value = "";
-      document.getElementById("feedback").innerText = "";
+      // Zufällige Rechenoperation
+      const operations = ['+', '-', '*', '/'];
+      const randomOp = operations[Math.floor(Math.random() * operations.length)];
+
+      switch(randomOp) {
+        case '+':
+          task = `${num1} + ${num2}`;
+          currentTask.answer = num1 + num2;
+          break;
+        case '-':
+          task = `${num1} - ${num2}`;
+          currentTask.answer = num1 - num2;
+          break;
+        case '*':
+          task = `${num1} * ${num2}`;
+          currentTask.answer = num1 * num2;
+          break;
+        case '/':
+          task = `${num1 * num2} / ${num2}`; // Sicherstellen, dass der Divisor nicht null ist
+          currentTask.answer = num1; // Ergebnis
+          break;
+      }
+
+      document.getElementById('task-container').innerHTML = `<p>Berechne: ${task}</p>`;
+      document.getElementById('answer').value = '';
+      document.getElementById('feedback').innerHTML = '';
     }
 
-    function kontrolliereAntwort() {
-      const nutzerAntwort = parseFloat(document.getElementById("antwort").value);
-      const korrekt = Math.abs(nutzerAntwort - aktuelleAufgabe.loesung) < 0.01;
-      const feedback = document.getElementById("feedback");
+    // Die Schwierigkeit ändern
+    function changeDifficulty() {
+      difficulty = document.getElementById('difficulty').value;
+      generateTask(); // Neue Aufgabe generieren
+    }
 
-      if (korrekt) {
-        punkte++;
-        richtig++;
-        feedback.style.color = "green";
-        feedback.innerText = "✅ Richtig! Super gemacht! 🎉";
+    // Antwort überprüfen
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById('answer').value);
+      if (userAnswer === currentTask.answer) {
+        document.getElementById('feedback').innerHTML = "<p>Richtig! Gute Arbeit!</p>";
       } else {
-        falsch++;
-        feedback.style.color = "red";
-        feedback.innerText = `❌ Falsch. Richtige Antwort: ${aktuelleAufgabe.loesung}`;
-        punkte = Math.max(0, punkte - 1);
+        document.getElementById('feedback').innerHTML = "<p>Leider falsch. Versuche es noch einmal.</p>";
       }
 
-      localStorage.setItem('punkte', punkte);
-      localStorage.setItem('richtig', richtig);
-      localStorage.setItem('falsch', falsch);
-
-      document.getElementById("punkte").innerText = `Punkte: ${punkte}`;
-      document.getElementById("statistik").innerText = `Richtig: ${richtig} | Falsch: ${falsch}`;
-
-      const bar = document.getElementById("fortschritt");
-      bar.style.width = Math.min(punkte, 30) * 100 / 30 + "%";
-
-      setTimeout(() => generiereAufgabe(), 1800);
+      // Neue Aufgabe generieren
+      generateTask();
     }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(() => {
-        console.log('Service Worker registriert');
-      });
-    }
-
-    document.getElementById("punkte").innerText = `Punkte: ${punkte}`;
-    document.getElementById("statistik").innerText = `Richtig: ${richtig} | Falsch: ${falsch}`;
-    document.getElementById("fortschritt").style.width = Math.min(punkte, 30) * 100 / 30 + "%";
-
-    generiereAufgabe();
+    // Beim Laden der Seite die erste Aufgabe generieren
+    window.onload = generateTask;
   </script>
 </body>
 </html>
